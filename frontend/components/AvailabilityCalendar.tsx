@@ -30,12 +30,12 @@ function rangeHasBlockedNight(startISO: string, endISO: string, ranges: BlockedR
 }
 
 export default function AvailabilityCalendar({
-  blockedRanges,
+  blockedRanges = [],
   checkIn,
   checkOut,
   onChange,
 }: {
-  blockedRanges: BlockedRange[];
+  blockedRanges?: BlockedRange[];
   checkIn: string;
   checkOut: string;
   onChange: (checkIn: string, checkOut: string) => void;

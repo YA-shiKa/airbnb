@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Menu, UserCircle2, Home as HomeIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import NavSearchPill from "./NavSearchPill";
 
 export default function Navbar() {
   const { user, logout, ready } = useAuth();
@@ -19,22 +20,7 @@ export default function Navbar() {
           <span className="hidden sm:block text-rausch font-bold text-xl tracking-tight">airbnb</span>
         </Link>
 
-        <Link
-          href="/"
-          className="hidden md:flex items-center border border-hairline rounded-full shadow-sm hover:shadow-pop transition-shadow px-2 py-2 text-sm font-medium divide-x divide-hairline"
-        >
-          <span className="px-4">Anywhere</span>
-          <span className="px-4 text-subtle">Any week</span>
-          <span className="pl-4 pr-2 text-subtle flex items-center gap-2">
-            Add guests
-            <span className="bg-rausch text-white rounded-full p-2">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                <circle cx="11" cy="11" r="7" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </span>
-          </span>
-        </Link>
+        <NavSearchPill />
 
         <div className="flex items-center gap-3 shrink-0">
           {ready && user?.is_host && (

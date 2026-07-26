@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import { ToastProvider } from "@/lib/toast";
+import { SearchProvider } from "@/lib/search-context";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
@@ -15,8 +16,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased bg-white text-ink">
         <AuthProvider>
           <ToastProvider>
-            <Navbar />
-            <main className="min-h-screen">{children}</main>
+            <SearchProvider>
+              <Navbar />
+              <main className="min-h-screen">{children}</main>
+            </SearchProvider>
           </ToastProvider>
         </AuthProvider>
       </body>
