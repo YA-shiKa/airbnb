@@ -29,41 +29,142 @@ function rangeHasBlockedNight(startISO: string, endISO: string, ranges: BlockedR
   return false;
 }
 
+function toISODate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+function addDays(d: Date, n: number): Date {
+  const copy = new Date(d);
+  copy.setDate(copy.getDate() + n);
+  return copy;
+}
+
+/** Next occurrence of the given day-of-week (0=Sun..6=Sat), today counts if it matches. */
+function nextWeekday(from: Date, targetDow: number): Date {
+  const diff = (targetDow - from.getDay() + 7) % 7;
+  return addDays(from, diff);
+}
+
+function shortcutLabel(iso: string): string {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
 export default function AvailabilityCalendar({
   blockedRanges = [],
   checkIn,
   checkOut,
   onChange,
+  showShortcuts = false,
 }: {
   blockedRanges?: BlockedRange[];
   checkIn: string;
   checkOut: string;
   onChange: (checkIn: string, checkOut: string) => void;
+  /** Show "Today / Tomorrow / This weekend" quick-pick shortcuts (used by the global nav search, not the per-listing booking widget). */
+  showShortcuts?: boolean;
 }) {
   const today = new Date();
+  const todayISO = toISODate(today);
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth()); // 0-indexed
 
-  const todayISO = today.toISOString().slice(0, 10);
+  const handlePick = (iso: string) => {
+    if (!checkIn || (checkIn && checkOut)) {
+      onChange(iso, "");
+      return;
+    }
+    if (iso <= checkIn) {
+      onChange(iso, "");
+      return;
+    }
+    if (rangeHasBlockedNight(checkIn, iso, blockedRanges)) {
+      onChange(iso, "");
+      return;
+    }
+    onChange(checkIn, iso);
+  };
 
-  const renderMonth = (year: number, month: number) => {
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells: (number | null)[] = Array(firstDay).fill(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
+    else setViewMonth((m) => m + 1);
+  };
+  const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+  const prevMonth = () => {
+    if (isCurrentMonth) return;
+    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
+    else setViewMonth((m) => m - 1);
+  };
 
-    return (
-      <div className="flex-1">
-        <p className="text-center font-semibold text-sm mb-3">
-          {new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-        </p>
-        <div className="grid grid-cols-7 gap-1 text-center text-xs text-subtle mb-1">
-          {WEEKDAY_LABELS.map((w, i) => <div key={i}>{w}</div>)}
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const cells: (number | null)[] = Array(firstDay).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const todayShortcut = todayISO;
+  const tomorrowShortcut = toISODate(addDays(today, 1));
+  const weekendStart = toISODate(nextWeekday(today, 5)); // upcoming Friday
+  const weekendEnd = toISODate(addDays(new Date(weekendStart + "T00:00:00"), 2)); // that Sunday
+
+  return (
+    <div className="bg-white rounded-2xl shadow-card border border-hairline p-5 flex gap-6" style={{ width: showShortcuts ? 620 : 340 }}>
+      {showShortcuts && (
+        <div className="flex flex-col gap-3 w-[180px] shrink-0">
+          <button
+            type="button"
+            onClick={() => onChange(todayShortcut, "")}
+            className="text-left border border-hairline rounded-xl px-4 py-3 hover:border-ink transition-colors"
+          >
+            <span className="block font-semibold text-sm">Today</span>
+            <span className="block text-sm text-subtle">{shortcutLabel(todayShortcut)}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange(tomorrowShortcut, "")}
+            className="text-left border border-hairline rounded-xl px-4 py-3 hover:border-ink transition-colors"
+          >
+            <span className="block font-semibold text-sm">Tomorrow</span>
+            <span className="block text-sm text-subtle">{shortcutLabel(tomorrowShortcut)}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange(weekendStart, weekendEnd)}
+            className="text-left border border-hairline rounded-xl px-4 py-3 hover:border-ink transition-colors"
+          >
+            <span className="block font-semibold text-sm">This weekend</span>
+            <span className="block text-sm text-subtle">{shortcutLabel(weekendStart)} – {shortcutLabel(weekendEnd)}</span>
+          </button>
         </div>
-        <div className="grid grid-cols-7 gap-1">
+      )}
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={prevMonth}
+            disabled={isCurrentMonth}
+            className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Previous month"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="font-semibold text-base">
+            {new Date(viewYear, viewMonth, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+          </span>
+          <button type="button" onClick={nextMonth} className="p-2 rounded-full hover:bg-gray-100" aria-label="Next month">
+            <ChevronRight size={16} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-7 text-center text-xs font-medium text-subtle mb-1">
+          {WEEKDAY_LABELS.map((w, i) => (
+            <div key={i} className="w-10 h-8 flex items-center justify-center">{w}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7">
           {cells.map((day, i) => {
-            if (day === null) return <div key={i} />;
-            const iso = toISO(year, month, day);
+            if (day === null) return <div key={i} className="w-10 h-10" />;
+            const iso = toISO(viewYear, viewMonth, day);
             const isPast = iso < todayISO;
             const blocked = isBlocked(iso, blockedRanges);
             const disabled = isPast || blocked;
@@ -78,7 +179,7 @@ export default function AvailabilityCalendar({
                 disabled={disabled}
                 onClick={() => handlePick(iso)}
                 title={blocked ? "Not available" : undefined}
-                className={`aspect-square rounded-full text-sm flex items-center justify-center transition-colors
+                className={`w-10 h-10 rounded-full text-sm flex items-center justify-center transition-colors
                   ${disabled ? "text-gray-300 line-through cursor-not-allowed" : "hover:bg-gray-100 cursor-pointer"}
                   ${isCheckIn || isCheckOut ? "bg-ink text-white hover:bg-ink" : ""}
                   ${inRange ? "bg-gray-100" : ""}
@@ -89,68 +190,13 @@ export default function AvailabilityCalendar({
             );
           })}
         </div>
-      </div>
-    );
-  };
 
-  const handlePick = (iso: string) => {
-    if (!checkIn || (checkIn && checkOut)) {
-      // Start a fresh selection
-      onChange(iso, "");
-      return;
-    }
-    // We have a check-in but no check-out yet
-    if (iso <= checkIn) {
-      onChange(iso, "");
-      return;
-    }
-    if (rangeHasBlockedNight(checkIn, iso, blockedRanges)) {
-      // Can't span over an unavailable night — restart selection at this date
-      onChange(iso, "");
-      return;
-    }
-    onChange(checkIn, iso);
-  };
-
-  const nextMonth = () => {
-    if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
-    else setViewMonth((m) => m + 1);
-  };
-  const prevMonth = () => {
-    const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
-    if (isCurrentMonth) return;
-    if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
-    else setViewMonth((m) => m - 1);
-  };
-
-  const secondMonth = viewMonth === 11 ? 0 : viewMonth + 1;
-  const secondYear = viewMonth === 11 ? viewYear + 1 : viewYear;
-
-  return (
-    <div className="border border-hairline rounded-2xl p-4">
-      <div className="flex items-center justify-between mb-2">
-        <button type="button" onClick={prevMonth} className="p-2 rounded-full hover:bg-gray-100" aria-label="Previous month">
-          <ChevronLeft size={16} />
-        </button>
-        <span className="text-xs text-subtle">
-          {checkIn && !checkOut ? "Select checkout date" : "Select check-in date"}
-        </span>
-        <button type="button" onClick={nextMonth} className="p-2 rounded-full hover:bg-gray-100" aria-label="Next month">
-          <ChevronRight size={16} />
-        </button>
+        {(checkIn || checkOut) && (
+          <button type="button" onClick={() => onChange("", "")} className="text-xs font-semibold underline mt-3">
+            Clear dates
+          </button>
+        )}
       </div>
-      <div className="hidden sm:flex gap-6">
-        {renderMonth(viewYear, viewMonth)}
-        {renderMonth(secondYear, secondMonth)}
-      </div>
-      <div className="sm:hidden">
-        {renderMonth(viewYear, viewMonth)}
-      </div>
-      {(checkIn || checkOut) && (
-        <button type="button" onClick={() => onChange("", "")} className="text-xs font-semibold underline mt-3">
-          Clear dates
-        </button>
-      )}
     </div>
   );
 }

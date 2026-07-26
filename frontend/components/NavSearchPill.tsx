@@ -111,6 +111,7 @@ export default function NavSearchPill() {
             <AvailabilityCalendar
               checkIn={draft.checkIn}
               checkOut={draft.checkOut}
+              showShortcuts
               onChange={(ci, co) => {
                 setDraft((d) => ({ ...d, checkIn: ci, checkOut: co }));
                 if (ci && co) setOpen(null);
