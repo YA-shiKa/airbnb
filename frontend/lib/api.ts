@@ -3,8 +3,8 @@ import type {
   User, Amenity,
 } from "@/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
 class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
