@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Check, Star, MapPin, Award } from "lucide-react";
+import Link from "next/link";
+import { Check, Star, MapPin, Award, MessageCircle } from "lucide-react";
 import { api } from "@/lib/api";
 import type { ListingDetail } from "@/types";
 import Gallery from "@/components/Gallery";
@@ -81,6 +82,15 @@ export default function ListingDetailPage() {
           </div>
 
           <p className="py-6 border-b border-hairline text-ink leading-relaxed whitespace-pre-line">{listing.description}</p>
+
+          <div className="py-6 border-b border-hairline">
+            <Link
+              href="/messages"
+              className="inline-flex items-center gap-2 border border-ink rounded-lg px-5 py-3 text-sm font-semibold hover:bg-gray-50 transition-colors"
+            >
+              <MessageCircle size={16} /> Contact {listing.host.name.split(" ")[0]}
+            </Link>
+          </div>
 
           <div className="py-6 border-b border-hairline">
             <h2 className="text-lg font-semibold mb-4">What this place offers</h2>

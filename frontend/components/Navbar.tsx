@@ -56,6 +56,7 @@ export default function Navbar() {
                     <div className="px-4 py-2 text-sm font-semibold border-b border-hairline mb-1">{user.name}</div>
                     <Link href="/trips" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm hover:bg-gray-50">My trips</Link>
                     <Link href="/wishlist" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm hover:bg-gray-50">Wishlists</Link>
+                    <Link href="/messages" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm hover:bg-gray-50">Messages</Link>
                     <Link href="/host" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm hover:bg-gray-50">Host dashboard</Link>
                     <Link href="/host/listings/new" onClick={() => setOpen(false)} className="block px-4 py-2 text-sm hover:bg-gray-50">Create a listing</Link>
                     <div className="border-t border-hairline mt-1 pt-1">
