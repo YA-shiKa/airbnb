@@ -6,24 +6,21 @@ listing details, book dates, manage trips, leave reviews, save wishlists, and
 
 **Live demo:** https://airbnb-seven-pi.vercel.app
 **API:** https://airbnb-t1qb.onrender.com
-**Source:** https://github.com/YA-shiKa/airbnb
 
-> Note: the backend is hosted on Render's free tier, which spins down after
-> inactivity — the first request after a period of idle time can take 30–60
-> seconds to wake it up.
+> Note: the backend is hosted on Render's free tier, the first request after a period of idle time can take 30–60 seconds to wake it up.
 
 ---
 
 ## Tech stack
 
-| Layer          | Technology |
-|----------------|------------|
-| Frontend       | Next.js 14 (App Router), TypeScript, Tailwind CSS |
-| Backend        | Python, FastAPI |
-| ORM            | SQLAlchemy |
-| Database       | SQLite |
-| Icons          | lucide-react |
-| Deployment     | Vercel (frontend) + Render (backend) |
+| Layer      | Technology                                        |
+| ---------- | ------------------------------------------------- |
+| Frontend   | Next.js 14 (App Router), TypeScript, Tailwind CSS |
+| Backend    | Python, FastAPI                                   |
+| ORM        | SQLAlchemy                                        |
+| Database   | SQLite                                            |
+| Icons      | lucide-react                                      |
+| Deployment | Vercel (frontend) + Render (backend)              |
 
 No external/paid APIs are used anywhere — maps, images, and payments are all
 mocked or use free, keyless public services (see [Assumptions](#assumptions-made)).
@@ -60,32 +57,17 @@ Visit http://localhost:3000.
 
 ### Demo accounts (seeded, password `password123` for all)
 
-| Email                      | Role  |
-|----------------------------|-------|
-| guest@example.com          | Guest |
-| rohan@example.com          | Guest |
-| amara.host@example.com     | Host (Superhost) |
-| diego.host@example.com     | Host |
-| priya.host@example.com     | Host (Superhost) |
-| lars.host@example.com      | Host |
+| Email                  | Role             |
+| ---------------------- | ---------------- |
+| guest@example.com      | Guest            |
+| rohan@example.com      | Guest            |
+| amara.host@example.com | Host (Superhost) |
+| diego.host@example.com | Host             |
+| priya.host@example.com | Host (Superhost) |
+| lars.host@example.com  | Host             |
 
 The login page also lists every seeded account with one-click sign-in, so you
 don't need to type these in by hand.
-
-### Deploying your own copy
-
-1. **Push to GitHub**, then:
-2. **Backend → Render (or Railway):** New Web Service, root directory
-   `backend/`, build command `pip install -r requirements.txt`, start command
-   `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set a `PYTHON_VERSION`
-   env var (e.g. `3.11.9`) — some pinned dependencies don't yet have
-   prebuilt wheels for the very latest Python versions some platforms default
-   to.
-3. **Frontend → Vercel:** root directory `frontend/`, environment variable
-   `NEXT_PUBLIC_API_URL` set to your Render backend's URL (no trailing
-   slash), deploy.
-4. Optionally tighten the backend's CORS `allow_origins` in `app/main.py` to
-   your exact Vercel domain instead of `"*"`.
 
 ---
 
@@ -163,6 +145,7 @@ Booking ──1:1── Review (optional; a review can be tied to the specific s
 `listing_amenities` (join table), `bookings`, `reviews`, `wishlists`.
 
 Notable schema decisions:
+
 - **Booking prices are snapshotted** at creation time (`nightly_rate`,
   `subtotal`, `cleaning_fee`, `service_fee`, `total_price` all stored on the
   `Booking` row itself), so a guest's past trip receipt stays accurate even
@@ -183,26 +166,26 @@ Full column-level detail lives in `backend/app/models.py`.
 
 All routes are prefixed `/api`.
 
-| Method | Path                              | Purpose                                        |
-|--------|-----------------------------------|-------------------------------------------------|
-| POST   | `/users/register`                 | Create an account (guest or host)               |
-| POST   | `/users/login`                    | Mocked login                                    |
-| GET    | `/users`                          | List seeded accounts (used by the login page's quick-sign-in list) |
-| GET    | `/listings`                       | Search/filter/paginate active listings          |
-| GET    | `/listings/{id}`                  | Listing detail (photos, amenities, reviews, booked date ranges) |
-| POST   | `/listings`                       | Create a listing (host)                         |
-| PUT    | `/listings/{id}`                  | Update a listing (host)                         |
-| DELETE | `/listings/{id}`                  | Delete a listing (host)                         |
-| GET    | `/listings/host/{host_id}`        | Host dashboard: owned listings + their bookings |
-| GET    | `/listings/meta/categories`       | Distinct category values (icon filter row)      |
-| GET    | `/listings/meta/property-types`   | Distinct property types (filters)               |
-| GET    | `/listings/meta/amenities`        | All amenities (filters + listing form)          |
-| POST   | `/bookings`                       | Create a booking (validates dates/capacity/overlap) |
-| GET    | `/bookings/guest/{guest_id}`      | A guest's trips                                 |
-| POST   | `/bookings/{id}/cancel`           | Cancel a booking                                |
-| POST   | `/listings/{id}/reviews`          | Leave a review for a (completed) stay           |
-| POST   | `/wishlist/toggle`                | Add/remove a listing from a user's wishlist     |
-| GET    | `/wishlist/{user_id}`             | A user's saved listings                         |
+| Method | Path                            | Purpose                                                            |
+| ------ | ------------------------------- | ------------------------------------------------------------------ |
+| POST   | `/users/register`               | Create an account (guest or host)                                  |
+| POST   | `/users/login`                  | Mocked login                                                       |
+| GET    | `/users`                        | List seeded accounts (used by the login page's quick-sign-in list) |
+| GET    | `/listings`                     | Search/filter/paginate active listings                             |
+| GET    | `/listings/{id}`                | Listing detail (photos, amenities, reviews, booked date ranges)    |
+| POST   | `/listings`                     | Create a listing (host)                                            |
+| PUT    | `/listings/{id}`                | Update a listing (host)                                            |
+| DELETE | `/listings/{id}`                | Delete a listing (host)                                            |
+| GET    | `/listings/host/{host_id}`      | Host dashboard: owned listings + their bookings                    |
+| GET    | `/listings/meta/categories`     | Distinct category values (icon filter row)                         |
+| GET    | `/listings/meta/property-types` | Distinct property types (filters)                                  |
+| GET    | `/listings/meta/amenities`      | All amenities (filters + listing form)                             |
+| POST   | `/bookings`                     | Create a booking (validates dates/capacity/overlap)                |
+| GET    | `/bookings/guest/{guest_id}`    | A guest's trips                                                    |
+| POST   | `/bookings/{id}/cancel`         | Cancel a booking                                                   |
+| POST   | `/listings/{id}/reviews`        | Leave a review for a (completed) stay                              |
+| POST   | `/wishlist/toggle`              | Add/remove a listing from a user's wishlist                        |
+| GET    | `/wishlist/{user_id}`           | A user's saved listings                                            |
 
 Interactive, always-current documentation for every endpoint (request/response
 schemas, try-it-out) is auto-generated by FastAPI at `/docs`.
@@ -211,7 +194,7 @@ schemas, try-it-out) is auto-generated by FastAPI at `/docs`.
 
 ## Assumptions made
 
-- **Auth is intentionally mocked**, per the assignment's explicit allowance.
+- **Auth is intentionally mocked**,
   Passwords are SHA-256 hashed (not a production-grade scheme) and there's no
   session/JWT layer — the frontend simply holds the logged-in user's id/role
   in `localStorage` after a login/register call and passes `user_id` /
@@ -255,10 +238,6 @@ schemas, try-it-out) is auto-generated by FastAPI at `/docs`.
   Today/Tomorrow/This weekend shortcuts, and a guest counter), in addition to
   the required search bar on the homepage — both share the same underlying
   search state
-
-**Not implemented** (left as placeholders per the assignment's explicit
-mocked-sections list, or out of scope): image upload to cloud storage, dark
-mode, real payments.
 
 ## Possible next steps
 
