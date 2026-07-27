@@ -15,7 +15,7 @@ app = FastAPI(title="Airbnb Clone API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # demo project: wide open. Lock this down for real deployments.
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BlockedRange {
@@ -69,6 +69,24 @@ export default function AvailabilityCalendar({
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth()); // 0-indexed
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState(520);
+
+  useLayoutEffect(() => {
+    // Measure the real remaining space below this popup's actual position (it may
+    // sit inside a stuck `position: sticky` ancestor, so a flat vh-based guess
+    // isn't reliable — has to be computed from where it actually rendered).
+    const measure = () => {
+      const top = containerRef.current?.getBoundingClientRect().top ?? 0;
+      const margin = 16;
+      const available = Math.max(200, window.innerHeight - top - margin);
+      setMaxHeight(Math.min(520, available));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
   const handlePick = (iso: string) => {
     if (!checkIn || (checkIn && checkOut)) {
       onChange(iso, "");
@@ -107,7 +125,11 @@ export default function AvailabilityCalendar({
   const weekendEnd = toISODate(addDays(new Date(weekendStart + "T00:00:00"), 2)); // that Sunday
 
   return (
-    <div className="bg-white rounded-2xl shadow-card border border-hairline p-5 flex gap-6" style={{ width: showShortcuts ? 620 : 340 }}>
+    <div
+      ref={containerRef}
+      className="bg-white rounded-2xl shadow-card border border-hairline p-5 flex gap-6 overflow-y-auto"
+      style={{ width: showShortcuts ? 620 : 340, maxHeight }}
+    >
       {showShortcuts && (
         <div className="flex flex-col gap-3 w-[180px] shrink-0">
           <button
